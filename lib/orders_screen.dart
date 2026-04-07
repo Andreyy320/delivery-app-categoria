@@ -37,35 +37,30 @@ class OrdersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final usersStream =
-    FirebaseFirestore.instance.collection('users').snapshots();
+    final usersStream = FirebaseFirestore.instance.collection('users').snapshots();
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF6F9FC), // Более мягкий светлый фон
       appBar: AppBar(
-        title: Text('Заказы — $shopName'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        title: Text('Заказы — $shopName', style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
+            icon: const Icon(Icons.history_rounded, color: Colors.blueGrey),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => OrderHistoryScreen(shopId: shopId),
-                ),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => OrderHistoryScreen(shopId: shopId)));
             },
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
             },
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: FutureBuilder<String>(
@@ -82,7 +77,6 @@ class OrdersScreen extends StatelessWidget {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
-
               if (snapshot.hasError) {
                 return Center(child: Text('Ошибка: ${snapshot.error}'));
               }
@@ -90,7 +84,7 @@ class OrdersScreen extends StatelessWidget {
               final userDocs = snapshot.data?.docs ?? [];
 
               return ListView(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 children: userDocs.map((userDoc) {
                   final ordersRef = FirebaseFirestore.instance
                       .collection('users')
@@ -103,175 +97,133 @@ class OrdersScreen extends StatelessWidget {
                         .where('status', whereIn: ['new', 'preparing'])
                         .snapshots(),
                     builder: (context, orderSnapshot) {
-                      if (orderSnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return const SizedBox();
-                      }
-
-                      if (orderSnapshot.hasError) {
-                        return Center(
-                            child: Text('Ошибка: ${orderSnapshot.error}'));
-                      }
+                      if (orderSnapshot.connectionState == ConnectionState.waiting) return const SizedBox();
+                      if (orderSnapshot.hasError) return Center(child: Text('Ошибка: ${orderSnapshot.error}'));
 
                       final ordersDocs = orderSnapshot.data?.docs ?? [];
                       if (ordersDocs.isEmpty) return const SizedBox();
 
                       return Column(
                         children: ordersDocs.map((doc) {
-                          final orderData =
-                          doc.data() as Map<String, dynamic>;
+                          final orderData = doc.data() as Map<String, dynamic>;
                           final orderId = doc.id;
 
-                          final createdAt =
-                          orderData['createdAt'] as Timestamp?;
-                          final dateString = createdAt != null
-                              ? DateFormat('dd.MM.yyyy HH:mm')
-                              .format(createdAt.toDate())
-                              : '-';
-
-                          final items =
-                              orderData['items'] as List<dynamic>? ?? [];
+                          // Твои переменные времени
+                          final createdAt = orderData['createdAt'] as Timestamp?;
+                          final dateString = createdAt != null ? DateFormat('dd.MM.yyyy HH:mm').format(createdAt.toDate()) : '-';
+                          final items = orderData['items'] as List<dynamic>? ?? [];
                           final status = orderData['status'] ?? 'new';
+                          final statusUpdatedAt = orderData['statusUpdatedAt'] as Timestamp?;
+                          final statusTimeString = statusUpdatedAt != null ? DateFormat('HH:mm').format(statusUpdatedAt.toDate()) : '-';
 
-                          final statusUpdatedAt =
-                          orderData['statusUpdatedAt'] as Timestamp?;
-                          final statusTimeString = statusUpdatedAt != null
-                              ? DateFormat('dd.MM.yyyy HH:mm')
-                              .format(statusUpdatedAt.toDate())
-                              : '-';
-
-                          final startedAt =
-                          orderData['startedAt'] as Timestamp?;
+                          final startedAt = orderData['startedAt'] as Timestamp?;
                           final readyAt = orderData['readyAt'] as Timestamp?;
-                          final canceledAt =
-                          orderData['canceledAt'] as Timestamp?;
-
-                          final startedTimeString = startedAt != null
-                              ? DateFormat('dd.MM.yyyy HH:mm')
-                              .format(startedAt.toDate())
-                              : '-';
-                          final readyTimeString = readyAt != null
-                              ? DateFormat('dd.MM.yyyy HH:mm')
-                              .format(readyAt.toDate())
-                              : '-';
-                          final canceledTimeString = canceledAt != null
-                              ? DateFormat('dd.MM.yyyy HH:mm')
-                              .format(canceledAt.toDate())
-                              : '-';
+                          final canceledAt = orderData['canceledAt'] as Timestamp?;
 
                           return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
+                            margin: const EdgeInsets.only(bottom: 20),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(24),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.06),
-                                  blurRadius: 12,
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 15,
                                   offset: const Offset(0, 6),
                                 ),
                               ],
                             ),
-                            child: ExpansionTile(
-                              tilePadding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 12),
-                              childrenPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                              title: Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    orderData['clientName'] ?? 'Клиент',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.end,
-                                    children: [
-                                      _buildStatus(status, shopCategory),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'Обновлено: $statusTimeString',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[500]),
-                                      ),
-                                      if (startedAt != null)
-                                        Text('Начало: $startedTimeString',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey[600])),
-                                      if (readyAt != null)
-                                        Text('Готово: $readyTimeString',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey[600])),
-                                      if (canceledAt != null)
-                                        Text('Отменен: $canceledTimeString',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey[600])),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: Text(
-                                  'Дата: $dateString\n'
-                                      'Телефон: ${orderData['clientPhone'] ??
-                                      '-'}\n'
-                                      'Оплата: ${translatePaymentMethod(
-                                      orderData['paymentMethod'] ?? '-')}\n'
-                                      'Сумма: ${orderData['total'] ?? 0} ₽',
-                                  style: TextStyle(color: Colors.grey[600]),
-                                ),
-                              ),
-                              children: [
-                                const Divider(),
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Состав заказа:',
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                ...items.map((item) {
-                                  final i = item as Map<String, dynamic>;
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 4),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                            child: Theme(
+                              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                              child: ExpansionTile(
+                                tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                childrenPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                title: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Expanded(
-                                          child: Text(
-                                            i['name'] ?? '-',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
                                         Text(
-                                            '${i['quantity']} x ${i['price']} ₽'),
+                                          orderData['clientName'] ?? 'Клиент',
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text('ID: ...${orderId.substring(orderId.length - 5)}',
+                                            style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                                       ],
                                     ),
-                                  );
-                                }),
-                                const SizedBox(height: 15),
-                                Row(
-                                  children: _buildButtons(
-                                      shopCategory, ordersRef, orderId),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        _buildStatus(status, shopCategory),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          'Обновлено: $statusTimeString',
+                                          style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 10),
-                              ],
+                                subtitle: Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: Wrap(
+                                    spacing: 15,
+                                    runSpacing: 5,
+                                    children: [
+                                      _infoLabel(Icons.calendar_today, dateString),
+                                      _infoLabel(Icons.phone, orderData['clientPhone'] ?? '-'),
+                                      _infoLabel(Icons.payment, translatePaymentMethod(orderData['paymentMethod'] ?? '-')),
+                                      _infoLabel(Icons.account_balance_wallet, '${orderData['total'] ?? 0} ₽', isBold: true),
+                                    ],
+                                  ),
+                                ),
+                                children: [
+                                  const Divider(height: 1),
+                                  const SizedBox(height: 16),
+                                  // Блок с таймингами (Начало, Готово и т.д.)
+                                  if (startedAt != null || readyAt != null || canceledAt != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 16),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        children: [
+                                          if (startedAt != null) _timeBadge('Начало', startedAt),
+                                          if (readyAt != null) _timeBadge('Готово', readyAt),
+                                          if (canceledAt != null) _timeBadge('Отмена', canceledAt),
+                                        ],
+                                      ),
+                                    ),
+                                  const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text('СОСТАВ ЗАКАЗА',
+                                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: Colors.grey, letterSpacing: 1.1)),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  ...items.map((item) {
+                                    final i = item as Map<String, dynamic>;
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                            child: Text('${i['quantity']}x', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(child: Text(i['name'] ?? '-', style: const TextStyle(fontSize: 15))),
+                                          Text('${i['price']} ₽', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                  const SizedBox(height: 20),
+                                  Row(children: _buildButtons(shopCategory, ordersRef, orderId)),
+                                  const SizedBox(height: 12),
+                                ],
+                              ),
                             ),
                           );
                         }).toList(),
@@ -287,27 +239,50 @@ class OrdersScreen extends StatelessWidget {
     );
   }
 
-  // Построение кнопок по категории магазина
-  List<Widget> _buildButtons(String category, CollectionReference ordersRef,
-      String orderId) {
+// Вспомогательные мини-виджеты для чистоты кода
+  Widget _infoLabel(IconData icon, String text, {bool isBold = false}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: Colors.grey[400]),
+        const SizedBox(width: 4),
+        Text(text, style: TextStyle(
+            fontSize: 13,
+            color: isBold ? Colors.indigo : Colors.grey[700],
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal
+        )),
+      ],
+    );
+  }
+
+  Widget _timeBadge(String label, Timestamp ts) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+        Text(DateFormat('HH:mm').format(ts.toDate()), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  List<Widget> _buildButtons(String category, CollectionReference ordersRef, String orderId) {
     switch (category.toLowerCase()) {
       case 'restaurant':
         return [
-          _button('Начать готовить', Colors.blue, () {
+          _button('Начать', Colors.blue, () {
             ordersRef.doc(orderId).update({
               'status': 'preparing',
               'startedAt': FieldValue.serverTimestamp(),
               'statusUpdatedAt': FieldValue.serverTimestamp(),
             });
           }),
-          _button('Заказ готов', Colors.green, () {
+          _button('Готово', Colors.green, () {
             ordersRef.doc(orderId).update({
               'status': 'ready',
               'readyAt': FieldValue.serverTimestamp(),
               'statusUpdatedAt': FieldValue.serverTimestamp(),
             });
           }),
-          _button('Отменить', Colors.red, () {
+          _button('Отмена', Colors.red, () {
             ordersRef.doc(orderId).update({
               'status': 'canceled',
               'canceledAt': FieldValue.serverTimestamp(),
@@ -319,9 +294,8 @@ class OrdersScreen extends StatelessWidget {
       case 'apteka':
       case 'product':
       case 'electronika':
-
         return [
-          _button('Собирается', Colors.blue, () {
+          _button('Сборка', Colors.blue, () {
             ordersRef.doc(orderId).update({
               'status': 'preparing',
               'startedAt': FieldValue.serverTimestamp(),
@@ -335,7 +309,7 @@ class OrdersScreen extends StatelessWidget {
               'statusUpdatedAt': FieldValue.serverTimestamp(),
             });
           }),
-          _button('Отменить', Colors.red, () {
+          _button('Отмена', Colors.red, () {
             ordersRef.doc(orderId).update({
               'status': 'canceled',
               'canceledAt': FieldValue.serverTimestamp(),
@@ -363,12 +337,26 @@ class OrdersScreen extends StatelessWidget {
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: color,
-            minimumSize: const Size(double.infinity, 45),
+            foregroundColor: Colors.white,
+            elevation: 0, // Плоский современный вид
+            // Фиксируем высоту 44 пикселя — стандарт для удобного нажатия пальцем
+            minimumSize: const Size(0, 44),
+            padding: const EdgeInsets.symmetric(horizontal: 2), // Минимум отступов по бокам
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(10), // Скругление под стиль "Quiet Luxury"
+            ),
           ),
           onPressed: onPressed,
-          child: Text(text),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            maxLines: 1, // Текст никогда не перепрыгнет на вторую строку
+            overflow: TextOverflow.ellipsis, // Если не влезет — аккуратно обрежется
+            style: const TextStyle(
+              fontSize: 11, // Оптимальный размер для мобильного веба
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );
@@ -426,3 +414,7 @@ class OrdersScreen extends StatelessWidget {
     );
   }
 }
+
+
+
+

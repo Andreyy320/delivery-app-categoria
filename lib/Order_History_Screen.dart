@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'order_tile.dart';
-import 'orders_screen.dart'; // для OrderTile
 
 class OrderHistoryScreen extends StatefulWidget {
   final String shopId;
@@ -13,37 +12,52 @@ class OrderHistoryScreen extends StatefulWidget {
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
-  String selectedStatus = 'all'; // all, preparing, ready, canceled
+  String selectedStatus = 'all';
 
   @override
   Widget build(BuildContext context) {
+    // Чистый поток пользователей
     final usersStream = FirebaseFirestore.instance.collection('users').snapshots();
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF6F9FC), // Светлый, профессиональный фон
       appBar: AppBar(
-        title: const Text('История заказов'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        title: const Text('История заказов',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         centerTitle: true,
       ),
       body: Column(
         children: [
-          // ===== Фильтр по статусу =====
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<String>(
-              value: selectedStatus,
-              items: const [
-                DropdownMenuItem(value: 'all', child: Text('Все')),
-                DropdownMenuItem(value: 'ready', child: Text('Готовые')),
-                DropdownMenuItem(value: 'canceled', child: Text('Отмененные')),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  selectedStatus = value!;
-                });
-              },
+          // Фильтр в виде аккуратного выпадающего меню
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: Colors.white,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedStatus,
+                  isExpanded: true,
+                  icon: const Icon(Icons.filter_list_rounded),
+                  items: const [
+                    DropdownMenuItem(value: 'all', child: Text('Все завершенные')),
+                    DropdownMenuItem(value: 'delivered', child: Text('Доставленные')),
+                    DropdownMenuItem(value: 'ready', child: Text('Готовы к выдаче')),
+                    DropdownMenuItem(value: 'canceled', child: Text('Отмененные')),
+                  ],
+                  onChanged: (value) => setState(() => selectedStatus = value!),
+                ),
+              ),
             ),
           ),
-          // ==============================
+
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: usersStream,
@@ -51,55 +65,51 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-
-                if (snapshot.hasError) {
-                  return Center(child: Text('Ошибка: ${snapshot.error}'));
-                }
+                if (snapshot.hasError) return Center(child: Text('Ошибка: ${snapshot.error}'));
 
                 final userDocs = snapshot.data?.docs ?? [];
 
-                // Формируем потоки заказов с фильтром
-                final List<Stream<QuerySnapshot>> orderStreams = userDocs.map((userDoc) {
-                  var query = FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(userDoc.id)
-                      .collection('orders')
-                      .where('shopId', isEqualTo: widget.shopId);
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: userDocs.length,
+                  itemBuilder: (context, index) {
+                    final userDoc = userDocs[index];
 
-                  if (selectedStatus != 'all') {
-                    query = query.where('status', isEqualTo: selectedStatus);
-                  } else {
-                    query = query.where('status', whereIn: ['ready', 'canceled']);
-                  }
+                    // Формируем запрос
+                    var query = FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(userDoc.id)
+                        .collection('orders')
+                        .where('shopId', isEqualTo: widget.shopId.trim());
 
-                  return query.snapshots();
-                }).toList();
+                    if (selectedStatus != 'all') {
+                      query = query.where('status', isEqualTo: selectedStatus);
+                    } else {
+                      // Теперь мы видим ВСЕ завершенные этапы
+                      query = query.where('status', whereIn: ['ready', 'delivered', 'canceled', 'accepted']);
+                    }
 
-                return ListView(
-                  padding: const EdgeInsets.all(12),
-                  children: orderStreams.map((stream) {
                     return StreamBuilder<QuerySnapshot>(
-                      stream: stream,
+                      stream: query.snapshots(),
                       builder: (context, orderSnapshot) {
-                        if (orderSnapshot.connectionState == ConnectionState.waiting) {
-                          return const SizedBox();
-                        }
-                        if (orderSnapshot.hasError) {
-                          return Text('Ошибка: ${orderSnapshot.error}');
-                        }
-
-                        final ordersDocs = orderSnapshot.data?.docs ?? [];
-                        if (ordersDocs.isEmpty) return const SizedBox();
+                        if (!orderSnapshot.hasData) return const SizedBox();
+                        final orders = orderSnapshot.data!.docs;
+                        if (orders.isEmpty) return const SizedBox();
 
                         return Column(
-                          children: ordersDocs.map((doc) {
-                            final ordersRef = doc.reference.parent;
-                            return OrderTile(doc: doc, ordersRef: ordersRef);
+                          children: orders.map((doc) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: OrderTile(
+                                  doc: doc,
+                                  ordersRef: doc.reference.parent
+                              ),
+                            );
                           }).toList(),
                         );
                       },
                     );
-                  }).toList(),
+                  },
                 );
               },
             ),

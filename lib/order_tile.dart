@@ -48,7 +48,8 @@ class OrderTile extends StatelessWidget {
       ),
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        childrenPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        childrenPadding: const EdgeInsets.symmetric(
+            horizontal: 20, vertical: 10),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -70,7 +71,8 @@ class OrderTile extends StatelessWidget {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
           child: Text(
-            'Телефон: $clientPhone\nДата: $dateString\nОплата: $paymentMethod\nСумма: ${orderData['total'] ?? 0} ₽',
+            'Телефон: $clientPhone\nДата: $dateString\nОплата: $paymentMethod\nСумма: ${orderData['total'] ??
+                0} ₽',
             style: TextStyle(color: Colors.grey[600]),
           ),
         ),
@@ -116,6 +118,10 @@ class OrderTile extends StatelessWidget {
         color = Colors.orange;
         text = 'Новый';
         break;
+      case 'accepted': // Добавили Принят
+        color = Colors.purple;
+        text = 'Принят';
+        break;
       case 'preparing':
         color = Colors.blue;
         text = 'Готовится';
@@ -124,13 +130,17 @@ class OrderTile extends StatelessWidget {
         color = Colors.green;
         text = 'Готов';
         break;
+      case 'delivered': // Добавили Доставлен
+        color = Colors.teal;
+        text = 'Доставлен';
+        break;
       case 'canceled':
         color = Colors.red;
         text = 'Отменен';
         break;
       default:
-        color = Colors.orange;
-        text = 'Новый';
+        color = Colors.grey; // Если статус совсем неизвестный, лучше серый
+        text = status; // Покажет сам текст статуса из базы, чтобы было понятно
     }
 
     return Container(
@@ -141,7 +151,8 @@ class OrderTile extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(color: color, fontWeight: FontWeight.w600),
+        style: TextStyle(
+            color: color, fontWeight: FontWeight.w600, fontSize: 12),
       ),
     );
   }
