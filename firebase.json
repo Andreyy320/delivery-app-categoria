@@ -1,7 +1,12 @@
 {
   "hosting": {
-    "site": "food-delivery-categor",
+    "target": "categories",
     "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
       {
         "source": "**",
