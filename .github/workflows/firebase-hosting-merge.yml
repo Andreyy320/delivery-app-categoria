@@ -11,10 +11,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: flutter build web --release
+
+      # 1. Устанавливаем Flutter (этого у тебя не было)
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      # 2. Подтягиваем зависимости
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 3. Собираем Web-версию
+      - name: Build Web
+        run: flutter build web --release
+
+      # 4. Деплоим в Firebase
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FOOD_DELIVERY_APP_C9657 }}
           channelId: live
           projectId: food-delivery-app-c9657
+          # Указываем цель, которую ты создал через target:apply
+          target: categories
