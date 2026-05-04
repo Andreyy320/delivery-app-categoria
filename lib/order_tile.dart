@@ -72,7 +72,7 @@ class OrderTile extends StatelessWidget {
           padding: const EdgeInsets.only(top: 6),
           child: Text(
             'Телефон: $clientPhone\nДата: $dateString\nОплата: $paymentMethod\nСумма: ${orderData['total'] ??
-                0} ₽',
+                0} Руб',
             style: TextStyle(color: Colors.grey[600]),
           ),
         ),
