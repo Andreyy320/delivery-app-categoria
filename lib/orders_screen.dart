@@ -237,6 +237,9 @@ class OrdersScreen extends StatelessWidget {
     final items = orderData['items'] as List<dynamic>? ?? [];
     final String restaurantComment = orderData['restaurantComment'] ?? '';
 
+    // ИСПОЛЬЗУЕМ itemsPrice для заведения, если оно есть, иначе total (для старых заказов)
+    final displayPrice = orderData['itemsPrice'] ?? orderData['total'] ?? 0;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -249,14 +252,13 @@ class OrdersScreen extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _infoLabel(Icons.account_balance_wallet, '${orderData['total'] ?? 0} Руб', isBold: true),
+            _infoLabel(Icons.account_balance_wallet, '$displayPrice Руб', isBold: true),
             _buildCourierInfo(orderData),
           ],
         ),
         trailing: _buildStatus(status, category),
         children: [
           const Divider(),
-          // ДОБАВЛЕНО: Блок комментария от заведения
           if (restaurantComment.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

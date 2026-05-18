@@ -88,7 +88,7 @@ class BusinessStopListScreen extends StatelessWidget {
               bool isAvailable = data['isAvailable'] ?? true;
               String name = data['name'] ?? data['title'] ?? 'Без названия';
               String desc = data['description'] ?? '';
-              String weight = data['weight'] ?? '';
+              String weight = data['weight']?.toString() ?? '';
               var price = data['price'] ?? 0;
               String imagePath = data['imagePath'] ?? data['imageUrl'] ?? '';
 
@@ -229,7 +229,7 @@ class BusinessStopListScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "$price ₽",
+                                      "$price Руб",
                                       style: const TextStyle(
                                         color: Colors.blueAccent,
                                         fontWeight: FontWeight.w900,
@@ -430,7 +430,7 @@ class _AddItemFormWebState extends State<AddItemFormWeb> {
                     Row(
                       children: [
                         Expanded(
-                            child: _modernInput(priceCtrl, "Цена (₽)",
+                            child: _modernInput(priceCtrl, "Цена (Руб)",
                                 Icons.payments_outlined,
                                 isNum: true)),
                         const SizedBox(width: 16),
@@ -703,7 +703,7 @@ class _EditItemFormWebState extends State<EditItemFormWeb> {
                   _card([
                     Row(
                       children: [
-                        Expanded(child: _modernInput(priceCtrl, "Цена (₽)", Icons.payments_outlined, isNum: true)),
+                        Expanded(child: _modernInput(priceCtrl, "Цена (Руб)", Icons.payments_outlined, isNum: true)),
                         const SizedBox(width: 16),
                         Expanded(child: _modernInput(weightCtrl, "Вес (н-р: 500 г)", Icons.scale_outlined)),
                       ],
