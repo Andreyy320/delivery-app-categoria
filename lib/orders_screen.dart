@@ -140,7 +140,6 @@ class OrdersScreen extends StatelessWidget {
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -149,8 +148,16 @@ class OrdersScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        title: Text(shopName, style: const TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        centerTitle: false, // Оставляем false, чтобы дать тексту максимум места слева
+        title: Text(
+          shopName,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16, // Оптимальный размер для узких экранов
+          ),
+          maxLines: 2,    // 🔹 ПОПРАВЛЕНО: теперь текст может переноситься на 2 строки, если экран < 350px
+          softWrap: true, // 🔹 ПОПРАВЛЕНО: разрешаем автоперенос слов целиком
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.restaurant_menu, color: Colors.deepOrangeAccent),
