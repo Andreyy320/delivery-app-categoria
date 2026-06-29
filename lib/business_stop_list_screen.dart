@@ -609,7 +609,6 @@ class _AddItemFormWebState extends State<AddItemFormWeb> {
     );
   }
 }
-
 // --- ЭКРАН РЕДАКТИРОВАНИЯ ---
 class EditItemFormWeb extends StatefulWidget {
   final String shopId;

@@ -148,15 +148,15 @@ class OrdersScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        centerTitle: false, // Оставляем false, чтобы дать тексту максимум места слева
+        centerTitle: false,
         title: Text(
           shopName,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16, // Оптимальный размер для узких экранов
+            fontSize: 16,
           ),
-          maxLines: 2,    // 🔹 ПОПРАВЛЕНО: теперь текст может переноситься на 2 строки, если экран < 350px
-          softWrap: true, // 🔹 ПОПРАВЛЕНО: разрешаем автоперенос слов целиком
+          maxLines: 2,
+          softWrap: true,
         ),
         actions: [
           IconButton(
@@ -244,7 +244,6 @@ class OrdersScreen extends StatelessWidget {
     final items = orderData['items'] as List<dynamic>? ?? [];
     final String restaurantComment = orderData['restaurantComment'] ?? '';
 
-    // ИСПОЛЬЗУЕМ itemsPrice для заведения, если оно есть, иначе total (для старых заказов)
     final displayPrice = orderData['itemsPrice'] ?? orderData['total'] ?? 0;
 
     return Container(
