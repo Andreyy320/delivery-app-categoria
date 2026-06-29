@@ -96,15 +96,15 @@ class BusinessStopListScreen extends StatelessWidget {
                 duration: const Duration(milliseconds: 300),
                 opacity: isAvailable ? 1.0 : 0.6,
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
                       )
                     ],
                   ),
@@ -115,12 +115,12 @@ class BusinessStopListScreen extends StatelessWidget {
                       Stack(
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(16),
                             child: imagePath.isNotEmpty
                                 ? Image.network(
                               imagePath,
-                              width: 90,
-                              height: 90,
+                              width: 95,
+                              height: 95,
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => _buildPlaceholder(),
                             )
@@ -128,51 +128,124 @@ class BusinessStopListScreen extends StatelessWidget {
                           ),
                           if (!isAvailable)
                             Container(
-                              width: 90,
-                              height: 90,
+                              width: 95,
+                              height: 95,
                               decoration: BoxDecoration(
-                                color: Colors.black45,
-                                borderRadius: BorderRadius.circular(15),
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Center(
                                 child: Text(
                                   "СТОП",
                                   style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1),
                                 ),
                               ),
                             ),
                         ],
                       ),
                       const SizedBox(width: 16),
-                      // ИНФОРМАЦИЯ
+
+                      // ИНФОРМАЦИЯ И ПАНЕЛЬ УПРАВЛЕНИЯ
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Название товара
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                color: Color(0xFF0F172A),
+                              ),
+                              maxLines: 1, // На мелких экранах держим в 1 строку для компактности
+                              overflow: TextOverflow.ellipsis,
+                            ),
+
+                            // Описание (если есть)
+                            if (desc.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  desc,
+                                  style: TextStyle(
+                                      color: Colors.blueGrey[500], fontSize: 12, height: 1.2),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+
+                            const SizedBox(height: 8),
+
+                            // Цена и Вес
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
                               children: [
-                                Expanded(
-                                  child: Text(
-                                    name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 17,
-                                      color: Color(0xFF1E293B),
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                Text(
+                                  "$price Руб",
+                                  style: const TextStyle(
+                                    color: Colors.blueAccent,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 17,
                                   ),
                                 ),
+                                if (weight.isNotEmpty) ...[
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    RegExp(r'[a-zA-Zа-яА-Я]').hasMatch(weight)
+                                        ? weight
+                                        : "/ $weight г",
+                                    style: TextStyle(
+                                        color: Colors.blueGrey[400],
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ]
+                              ],
+                            ),
+
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 6),
+                              child: Divider(color: Color(0xFFF1F5F9), height: 1, thickness: 1),
+                            ),
+
+                            // НИЖНЯЯ ПАНЕЛЬ: Заменили Row на Wrap, чтобы ничего не вылетало
+                            Wrap(
+                              spacing: 8, // Отступ между элементами по горизонтали
+                              runSpacing: 6, // Отступ, если элементы перенесутся на новую строку
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                // Статус "В наличии" / "В стопе"
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: isAvailable ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    isAvailable ? "В наличии" : "В стопе",
+                                    style: TextStyle(
+                                      color: isAvailable ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+
+                                // Кнопки действий внутри Row с min размером, чтобы Wrap правильно их переносил целиком
                                 Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
                                       constraints: const BoxConstraints(),
-                                      padding: EdgeInsets.zero,
-                                      icon: const Icon(Icons.edit_outlined, color: Colors.blueAccent, size: 20),
+                                      padding: const EdgeInsets.all(4),
+                                      icon: Icon(Icons.edit_note_rounded, color: Colors.blueGrey[400], size: 22),
                                       onPressed: () {
                                         Navigator.push(
                                           context,
@@ -180,18 +253,19 @@ class BusinessStopListScreen extends StatelessWidget {
                                         );
                                       },
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 6),
                                     IconButton(
                                       constraints: const BoxConstraints(),
-                                      padding: EdgeInsets.zero,
-                                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                                      padding: const EdgeInsets.all(4),
+                                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
                                       onPressed: () => _deleteItem(context, item.id),
                                     ),
-                                    const SizedBox(width: 4),
+                                    const SizedBox(width: 6),
                                     SizedBox(
-                                      height: 24,
+                                      height: 20,
+                                      width: 34,
                                       child: Transform.scale(
-                                        scale: 0.8,
+                                        scale: 0.7,
                                         child: Switch(
                                           value: isAvailable,
                                           activeColor: Colors.green,
@@ -207,66 +281,6 @@ class BusinessStopListScreen extends StatelessWidget {
                                       ),
                                     ),
                                   ],
-                                ),
-                              ],
-                            ),
-                            if (desc.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  desc,
-                                  style: TextStyle(
-                                      color: Colors.blueGrey[400], fontSize: 13),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "$price Руб",
-                                      style: const TextStyle(
-                                        color: Colors.blueAccent,
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    if (weight.isNotEmpty)
-                                      Text(
-                                        RegExp(r'[a-zA-Zа-яА-Я]').hasMatch(weight)
-                                            ? weight
-                                            : "$weight г",
-                                        style: TextStyle(
-                                            color: Colors.blueGrey[300],
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: isAvailable
-                                        ? Colors.green[50]
-                                        : Colors.red[50],
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    isAvailable ? "В наличии" : "В стопе",
-                                    style: TextStyle(
-                                      color: isAvailable
-                                          ? Colors.green[700]
-                                          : Colors.red[700],
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
                                 ),
                               ],
                             ),
@@ -306,18 +320,34 @@ class AddItemFormWeb extends StatefulWidget {
 
 class _AddItemFormWebState extends State<AddItemFormWeb> {
   final _formKey = GlobalKey<FormState>();
-  final nameCtrl = TextEditingController();
-  final priceCtrl = TextEditingController();
-  final catCtrl = TextEditingController();
-  final weightCtrl = TextEditingController();
-  final descCtrl = TextEditingController();
-  final imgUrlCtrl = TextEditingController();
+
+  // 🔹 ПОПРАВЛЕНО: Сделали контроллеры статическими, чтобы они жили в памяти
+  // даже когда пользователь временно вышел из экрана (кнопка назад).
+  static final nameCtrl = TextEditingController();
+  static final priceCtrl = TextEditingController();
+  static final catCtrl = TextEditingController();
+  static final weightCtrl = TextEditingController();
+  static final descCtrl = TextEditingController();
+  static final imgUrlCtrl = TextEditingController();
+
+  // 🔹 Изображение тоже сохраняем статически, чтобы заготовка фото не пропадала
+  static Uint8List? _savedWebImage;
 
   bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
-  Uint8List? _webImage;
 
   final String _imgBBKey = "19b9ece492b6e9cf40bd22859665516b";
+
+  // 🔹 Метод для полной очистки черновика ПОСЛЕ успешного сохранения
+  static void _clearDraft() {
+    nameCtrl.clear();
+    priceCtrl.clear();
+    catCtrl.clear();
+    weightCtrl.clear();
+    descCtrl.clear();
+    imgUrlCtrl.clear();
+    _savedWebImage = null;
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -329,7 +359,7 @@ class _AddItemFormWebState extends State<AddItemFormWeb> {
       if (image != null) {
         final Uint8List f = await image.readAsBytes();
         setState(() {
-          _webImage = f;
+          _savedWebImage = f;
         });
       }
     } catch (e) {
@@ -357,7 +387,7 @@ class _AddItemFormWebState extends State<AddItemFormWeb> {
 
   Future<void> _saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_webImage == null && imgUrlCtrl.text.trim().isEmpty) {
+    if (_savedWebImage == null && imgUrlCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Добавьте фото!")));
       return;
@@ -366,8 +396,8 @@ class _AddItemFormWebState extends State<AddItemFormWeb> {
     setState(() => _isLoading = true);
     try {
       String finalImagePath = imgUrlCtrl.text.trim();
-      if (_webImage != null) {
-        String? uploadedUrl = await _uploadToImgBB(_webImage!);
+      if (_savedWebImage != null) {
+        String? uploadedUrl = await _uploadToImgBB(_savedWebImage!);
         if (uploadedUrl == null) throw Exception("Ошибка загрузки");
         finalImagePath = uploadedUrl;
       }
@@ -386,6 +416,10 @@ class _AddItemFormWebState extends State<AddItemFormWeb> {
         'isAvailable': true,
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      // 🔹 ПОПРАВЛЕНО: Стираем заготовку только тогда, когда товар успешно добавлен на сервер
+      _clearDraft();
+
       if (mounted) Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context)
@@ -446,12 +480,12 @@ class _AddItemFormWebState extends State<AddItemFormWeb> {
                     Center(
                       child: Column(
                         children: [
-                          if (_webImage != null)
+                          if (_savedWebImage != null)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 16),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
-                                child: Image.memory(_webImage!,
+                                child: Image.memory(_savedWebImage!,
                                     height: 180, width: 180, fit: BoxFit.cover),
                               ),
                             ),
@@ -465,10 +499,10 @@ class _AddItemFormWebState extends State<AddItemFormWeb> {
                                 side: const BorderSide(color: Colors.blueAccent),
                               ),
                               onPressed: _pickImage,
-                              icon: Icon(_webImage == null
+                              icon: Icon(_savedWebImage == null
                                   ? Icons.add_a_photo
                                   : Icons.refresh),
-                              label: Text(_webImage == null
+                              label: Text(_savedWebImage == null
                                   ? "Выбрать файл"
                                   : "Заменить файл"),
                             ),
